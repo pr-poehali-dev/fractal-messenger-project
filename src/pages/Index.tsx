@@ -52,8 +52,28 @@ export default function Index() {
   const [inputMsg, setInputMsg] = useState("");
   const [messages, setMessages] = useState(INIT_MESSAGES);
   const [showGiftModal, setShowGiftModal] = useState(false);
+  const [showWallpaperModal, setShowWallpaperModal] = useState(false);
+  const [chatWallpapers, setChatWallpapers] = useState<Record<number, string>>({});
 
   const isDark = theme === "dark";
+
+  const WALLPAPERS = [
+    { id: "none", label: "Без обоев", style: {} },
+    { id: "gradient1", label: "Закат", style: { background: "linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)" } },
+    { id: "gradient2", label: "Океан", style: { background: "linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%)" } },
+    { id: "gradient3", label: "Лес", style: { background: "linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%)" } },
+    { id: "gradient4", label: "Сирень", style: { background: "linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%)" } },
+    { id: "gradient5", label: "Золото", style: { background: "linear-gradient(135deg, #f6d365 0%, #fda085 100%)" } },
+    { id: "gradient6", label: "Ночь", style: { background: "linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)" } },
+    { id: "gradient7", label: "Мята", style: { background: "linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)" } },
+    { id: "gradient8", label: "Роза", style: { background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)" } },
+    { id: "dots", label: "Точки", style: { backgroundColor: isDark ? "#1a1a2e" : "#f0f4ff", backgroundImage: "radial-gradient(circle, #FACC15 1px, transparent 1px)", backgroundSize: "24px 24px" } },
+    { id: "lines", label: "Линии", style: { backgroundColor: isDark ? "#1a1a1b" : "#fafaf7", backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 10px, ${isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.04)"} 10px, ${isDark ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.04)"} 11px)` } },
+    { id: "grid", label: "Сетка", style: { backgroundColor: isDark ? "#111112" : "#f8f8f5", backgroundImage: `linear-gradient(rgba(250,204,21,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(250,204,21,0.1) 1px, transparent 1px)`, backgroundSize: "32px 32px" } },
+  ];
+
+  const currentWallpaper = activeChat ? (chatWallpapers[activeChat.id] ?? "none") : "none";
+  const wallpaperStyle = WALLPAPERS.find(w => w.id === currentWallpaper)?.style ?? {};
 
   const sendMessage = () => {
     if (!inputMsg.trim()) return;
@@ -447,6 +467,13 @@ export default function Index() {
                 >
                   <Icon name="Gift" size={18} className="text-[#FACC15]" />
                 </button>
+                <button
+                  onClick={() => setShowWallpaperModal(true)}
+                  className={`w-9 h-9 rounded-xl flex items-center justify-center ${hoverBg} transition-all`}
+                  title="Обои чата"
+                >
+                  <Icon name="Image" size={18} className={textMuted} />
+                </button>
                 <button className={`w-9 h-9 rounded-xl flex items-center justify-center ${hoverBg} transition-all`}>
                   <Icon name="MoreVertical" size={18} className={textMuted} />
                 </button>
@@ -454,7 +481,7 @@ export default function Index() {
             </div>
 
             {/* Сообщения */}
-            <div className="flex-1 overflow-y-auto p-5 space-y-3">
+            <div className="flex-1 overflow-y-auto p-5 space-y-3" style={wallpaperStyle}>
               {messages.map(msg => (
                 <div key={msg.id} className={`flex ${msg.from === "me" ? "justify-end" : "justify-start"}`}>
                   <div className="max-w-[70%]">
@@ -522,6 +549,47 @@ export default function Index() {
           </div>
         )}
       </div>
+
+      {/* Модал обоев */}
+      {showWallpaperModal && activeChat && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowWallpaperModal(false)}>
+          <div className={`${msgBg} rounded-2xl p-6 w-[420px] shadow-2xl`} onClick={e => e.stopPropagation()}>
+            <div className={`font-semibold text-base ${textMain} mb-1`}>Обои чата</div>
+            <div className={`text-xs ${textMuted} mb-4`}>{activeChat.name}</div>
+            <div className="grid grid-cols-4 gap-3 mb-5">
+              {WALLPAPERS.map(w => (
+                <button
+                  key={w.id}
+                  onClick={() => setChatWallpapers(prev => ({ ...prev, [activeChat.id]: w.id }))}
+                  className={`relative h-16 rounded-xl overflow-hidden border-2 transition-all hover:scale-105
+                    ${currentWallpaper === w.id ? "border-[#FACC15] shadow-md shadow-yellow-300/40" : `${isDark ? "border-[#333]" : "border-[#e8e8e0]"}`}`}
+                  style={w.id === "none" ? { background: isDark ? "#1e1e20" : "#f5f5f0" } : w.style}
+                >
+                  {w.id === "none" && (
+                    <span className={`text-xs ${textMuted} flex items-center justify-center h-full`}>Нет</span>
+                  )}
+                  {currentWallpaper === w.id && w.id !== "none" && (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="w-6 h-6 rounded-full bg-[#FACC15] flex items-center justify-center shadow-lg">
+                        <Icon name="Check" size={12} className="text-[#1a1a1a]" />
+                      </div>
+                    </div>
+                  )}
+                  <div className="absolute bottom-0 inset-x-0 bg-black/30 px-1 py-0.5">
+                    <span className="text-white text-[9px] truncate block text-center">{w.label}</span>
+                  </div>
+                </button>
+              ))}
+            </div>
+            <button
+              className="w-full py-2.5 bg-[#FACC15] text-[#1a1a1a] font-semibold rounded-xl hover:bg-[#F59E0B] transition-all"
+              onClick={() => setShowWallpaperModal(false)}
+            >
+              Готово
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Модал подарка */}
       {showGiftModal && (
