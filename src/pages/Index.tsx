@@ -54,6 +54,7 @@ export default function Index() {
   const [showGiftModal, setShowGiftModal] = useState(false);
   const [showWallpaperModal, setShowWallpaperModal] = useState(false);
   const [chatWallpapers, setChatWallpapers] = useState<Record<number, string>>({});
+  const [customWallpapers, setCustomWallpapers] = useState<Record<number, string>>({});
 
   const isDark = theme === "dark";
 
