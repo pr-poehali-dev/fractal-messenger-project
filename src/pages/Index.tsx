@@ -74,7 +74,23 @@ export default function Index() {
   ];
 
   const currentWallpaper = activeChat ? (chatWallpapers[activeChat.id] ?? "none") : "none";
-  const wallpaperStyle = WALLPAPERS.find(w => w.id === currentWallpaper)?.style ?? {};
+  const currentCustom = activeChat ? customWallpapers[activeChat.id] : undefined;
+  const wallpaperStyle: React.CSSProperties = currentWallpaper === "custom" && currentCustom
+    ? { backgroundImage: `url(${currentCustom})`, backgroundSize: "cover", backgroundPosition: "center" }
+    : (WALLPAPERS.find(w => w.id === currentWallpaper)?.style ?? {});
+
+  const handleCustomWallpaper = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !activeChat) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const dataUrl = ev.target?.result as string;
+      setCustomWallpapers(prev => ({ ...prev, [activeChat.id]: dataUrl }));
+      setChatWallpapers(prev => ({ ...prev, [activeChat.id]: "custom" }));
+    };
+    reader.readAsDataURL(file);
+    e.target.value = "";
+  };
 
   const sendMessage = () => {
     if (!inputMsg.trim()) return;
