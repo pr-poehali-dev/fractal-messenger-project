@@ -93,6 +93,28 @@ export default function Index() {
     e.target.value = "";
   };
 
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const touch = e.touches[0];
+    if (touch.clientX < 40) {
+      (e.currentTarget as HTMLElement).dataset.swipeStartX = String(touch.clientX);
+      (e.currentTarget as HTMLElement).dataset.swipeStartY = String(touch.clientY);
+    }
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const startX = Number((e.currentTarget as HTMLElement).dataset.swipeStartX);
+    const startY = Number((e.currentTarget as HTMLElement).dataset.swipeStartY);
+    if (!startX) return;
+    const touch = e.changedTouches[0];
+    const dx = touch.clientX - startX;
+    const dy = Math.abs(touch.clientY - startY);
+    if (dx > 60 && dy < 80) {
+      setChatFullscreen(false);
+    }
+    delete (e.currentTarget as HTMLElement).dataset.swipeStartX;
+    delete (e.currentTarget as HTMLElement).dataset.swipeStartY;
+  };
+
   const sendMessage = () => {
     if (!inputMsg.trim()) return;
     setMessages(prev => [...prev, {
@@ -451,7 +473,11 @@ export default function Index() {
       </div>
 
       {/* Область чата */}
-      <div className={`flex-1 flex flex-col ${chatBg} min-w-0`}>
+      <div
+        className={`flex-1 flex flex-col ${chatBg} min-w-0`}
+        onTouchStart={chatFullscreen ? handleTouchStart : undefined}
+        onTouchEnd={chatFullscreen ? handleTouchEnd : undefined}
+      >
         {section === "chats" && activeChat ? (
           <>
             {/* Шапка */}
