@@ -51,6 +51,7 @@ export default function Index() {
   const [activeChat, setActiveChat] = useState(CHATS[0]);
   const [inputMsg, setInputMsg] = useState("");
   const [messages, setMessages] = useState(INIT_MESSAGES);
+  const [chatFullscreen, setChatFullscreen] = useState(false);
   const [showGiftModal, setShowGiftModal] = useState(false);
   const [showWallpaperModal, setShowWallpaperModal] = useState(false);
   const [chatWallpapers, setChatWallpapers] = useState<Record<number, string>>({});
@@ -128,7 +129,7 @@ export default function Index() {
     <div className={`flex h-screen w-screen overflow-hidden ${bg}`} style={{ fontFamily: "'Golos Text', sans-serif" }}>
 
       {/* Крайняя левая панель — иконки */}
-      <div className={`flex flex-col items-center py-4 w-16 ${sidebar} border-r ${border} z-10 flex-shrink-0`}>
+      <div className={`flex flex-col items-center py-4 w-16 ${sidebar} border-r ${border} z-10 flex-shrink-0 transition-all duration-300 ${chatFullscreen ? "hidden" : ""}`}>
         <div className="w-10 h-10 rounded-2xl bg-[#FACC15] flex items-center justify-center mb-6 shadow-lg shadow-yellow-300/30 cursor-pointer">
           <span className="text-[#1a1a1a] font-bold text-xl leading-none">F</span>
         </div>
@@ -176,7 +177,7 @@ export default function Index() {
       </div>
 
       {/* Список (чаты / контакты / и т.д.) */}
-      <div className={`w-72 flex flex-col ${sidebar} border-r ${border} flex-shrink-0`}>
+      <div className={`w-72 flex flex-col ${sidebar} border-r ${border} flex-shrink-0 transition-all duration-300 ${chatFullscreen ? "hidden" : ""}`}>
         <div className={`flex items-center justify-between px-4 py-3 border-b ${border}`}>
           <h2 className={`font-semibold text-base ${textMain}`}>
             {section === "chats" && "Сообщения"}
@@ -229,7 +230,7 @@ export default function Index() {
               {CHATS.map(chat => (
                 <div
                   key={chat.id}
-                  onClick={() => setActiveChat(chat)}
+                  onClick={() => { setActiveChat(chat); setChatFullscreen(true); }}
                   className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-all duration-150
                     ${activeChat?.id === chat.id ? activeBg : hoverBg}`}
                 >
@@ -455,6 +456,15 @@ export default function Index() {
           <>
             {/* Шапка */}
             <div className={`flex items-center gap-3 px-5 py-3 border-b ${border} ${msgBg} flex-shrink-0`}>
+              {chatFullscreen && (
+                <button
+                  onClick={() => setChatFullscreen(false)}
+                  className={`w-9 h-9 rounded-xl flex items-center justify-center ${hoverBg} transition-all flex-shrink-0`}
+                  title="Назад"
+                >
+                  <Icon name="ArrowLeft" size={18} className={textMuted} />
+                </button>
+              )}
               <div className="relative">
                 <div
                   className="w-10 h-10 rounded-full flex items-center justify-center font-semibold text-white"
